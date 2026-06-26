@@ -3,7 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { Public } from '../auth/public.decorator';
 import { PrismaService } from '../prisma/prisma.service';
-import packageJson from '../../package.json';
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const packageJson = require('../../package.json') as { version?: string };
 
 @Public()
 @Controller('api/public')
