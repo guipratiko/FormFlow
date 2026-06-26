@@ -1,0 +1,27 @@
+-- Expand FormFieldType enum with enterprise field types
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'full_name';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'whatsapp';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'rg';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'address';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'cep';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'city';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'state';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'country';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'percentage';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'emoji_rating';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'hidden';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'calculated';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'payment';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'coupon';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'product';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'quantity';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'password_confirm';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'clickable_image';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'matrix';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'ranking';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'location';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'geolocation';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'utm_capture';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'api_token';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'seller_id';
+ALTER TYPE "form_flow"."FormFieldType" ADD VALUE IF NOT EXISTS 'lead_source';

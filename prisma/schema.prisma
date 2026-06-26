@@ -1,0 +1,325 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["form_flow"]
+}
+
+enum MemberRole {
+  admin
+  manager
+  operator
+  viewer
+
+  @@schema("form_flow")
+}
+
+enum FormStatus {
+  draft
+  published
+  unpublished
+  archived
+
+  @@schema("form_flow")
+}
+
+enum FormLayout {
+  single_page
+  wizard
+  multi_step
+
+  @@schema("form_flow")
+}
+
+enum FormFieldType {
+  short_text
+  long_text
+  full_name
+  email
+  phone
+  whatsapp
+  number
+  url
+  password
+  password_confirm
+  radio
+  checkbox
+  select
+  multi_select
+  date
+  time
+  datetime
+  file
+  image
+  document
+  video
+  nps
+  stars
+  emoji_rating
+  scale
+  signature
+  terms_acceptance
+  currency
+  percentage
+  cpf
+  cnpj
+  cpf_cnpj
+  rg
+  address
+  cep
+  city
+  state
+  country
+  hidden
+  calculated
+  payment
+  coupon
+  product
+  quantity
+  clickable_image
+  matrix
+  ranking
+  location
+  geolocation
+  utm_capture
+  api_token
+  seller_id
+  lead_source
+
+  @@schema("form_flow")
+}
+
+enum AuditAction {
+  create
+  update
+  publish
+  unpublish
+  archive
+  restore
+  soft_delete
+  duplicate
+
+  @@schema("form_flow")
+}
+
+model TenantProfile {
+  id        String   @id
+  name      String
+  status    String   @default("active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  members  TenantMember[]
+  forms    Form[]
+  auditLogs FormAuditLog[]
+
+  @@schema("form_flow")
+  @@map("tenant_profiles")
+}
+
+model TenantMember {
+  id        String     @id @default(uuid())
+  tenantId  String     @map("tenant_id")
+  userId    String     @map("user_id")
+  role      MemberRole @default(viewer)
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  tenant TenantProfile @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, userId])
+  @@index([tenantId])
+  @@index([userId])
+  @@schema("form_flow")
+  @@map("tenant_members")
+}
+
+model Form {
+  id          String     @id @default(uuid())
+  tenantId    String     @map("tenant_id")
+  title       String
+  slug        String     @unique
+  description String?
+  status      FormStatus @default(draft)
+  layout      FormLayout @default(single_page)
+  settings    Json       @default("{}")
+  publishedAt DateTime?  @map("published_at")
+  deletedAt   DateTime?  @map("deleted_at")
+  createdBy   String?    @map("created_by")
+  updatedBy   String?    @map("updated_by")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  tenant    TenantProfile    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  steps     FormStep[]
+  fields    FormField[]
+  theme     FormTheme?
+  responses FormResponse[]
+  views     FormView[]
+  auditLogs FormAuditLog[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, deletedAt])
+  @@schema("form_flow")
+  @@map("forms")
+}
+
+model FormStep {
+  id          String   @id @default(uuid())
+  formId      String   @map("form_id")
+  title       String?
+  description String?
+  orderIndex  Int      @map("order_index")
+  settings    Json     @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  form   Form        @relation(fields: [formId], references: [id], onDelete: Cascade)
+  fields FormField[]
+
+  @@unique([formId, orderIndex])
+  @@index([formId])
+  @@schema("form_flow")
+  @@map("form_steps")
+}
+
+model FormField {
+  id          String        @id @default(uuid())
+  formId      String        @map("form_id")
+  stepId      String?       @map("step_id")
+  type        FormFieldType
+  label       String
+  description String?
+  required    Boolean       @default(false)
+  orderIndex  Int           @map("order_index")
+  config      Json          @default("{}")
+  logic       Json          @default("{}")
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  form    Form              @relation(fields: [formId], references: [id], onDelete: Cascade)
+  step    FormStep?         @relation(fields: [stepId], references: [id], onDelete: SetNull)
+  answers FormResponseAnswer[]
+
+  @@index([formId])
+  @@index([formId, orderIndex])
+  @@index([stepId])
+  @@schema("form_flow")
+  @@map("form_fields")
+}
+
+model FormTheme {
+  id               String   @id @default(uuid())
+  formId           String   @unique @map("form_id")
+  logoUrl          String?  @map("logo_url")
+  logoSource       String   @default("url") @map("logo_source")
+  bannerUrl        String?  @map("banner_url")
+  bannerSource     String   @default("url") @map("banner_source")
+  headerVideoUrl   String?  @map("header_video_url")
+  headerVideoSource String  @default("url") @map("header_video_source")
+  primaryColor     String?  @map("primary_color")
+  secondaryColor   String?  @map("secondary_color")
+  backgroundColor  String?  @map("background_color")
+  fontFamily       String?  @map("font_family")
+  mode             String   @default("light")
+  customCss        String?  @map("custom_css")
+  layoutSettings   Json     @default("{}") @map("layout_settings")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@schema("form_flow")
+  @@map("form_themes")
+}
+
+model FormResponse {
+  id              String    @id @default(uuid())
+  formId          String    @map("form_id")
+  sessionId       String?   @map("session_id")
+  submittedAt     DateTime  @default(now()) @map("submitted_at")
+  ipAddress       String?   @map("ip_address")
+  userAgent       String?   @map("user_agent")
+  browser         String?
+  os              String?
+  device          String?
+  referrer        String?
+  utmSource       String?   @map("utm_source")
+  utmMedium       String?   @map("utm_medium")
+  utmCampaign     String?   @map("utm_campaign")
+  utmContent      String?   @map("utm_content")
+  utmTerm         String?   @map("utm_term")
+  metadata        Json      @default("{}")
+  deletedAt       DateTime? @map("deleted_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  form    Form                 @relation(fields: [formId], references: [id], onDelete: Cascade)
+  answers FormResponseAnswer[]
+
+  @@index([formId])
+  @@index([formId, submittedAt])
+  @@index([sessionId])
+  @@schema("form_flow")
+  @@map("form_responses")
+}
+
+model FormResponseAnswer {
+  id         String   @id @default(uuid())
+  responseId String   @map("response_id")
+  fieldId    String   @map("field_id")
+  value      Json
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  response FormResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  field    FormField    @relation(fields: [fieldId], references: [id], onDelete: Cascade)
+
+  @@unique([responseId, fieldId])
+  @@index([responseId])
+  @@index([fieldId])
+  @@schema("form_flow")
+  @@map("form_response_answers")
+}
+
+model FormView {
+  id        String   @id @default(uuid())
+  formId    String   @map("form_id")
+  viewedAt  DateTime @default(now()) @map("viewed_at")
+  sessionId String?  @map("session_id")
+  ipAddress String?  @map("ip_address")
+  referrer  String?
+  utmSource String?  @map("utm_source")
+  utmMedium String?  @map("utm_medium")
+  utmCampaign String? @map("utm_campaign")
+
+  form Form @relation(fields: [formId], references: [id], onDelete: Cascade)
+
+  @@index([formId])
+  @@index([formId, viewedAt])
+  @@schema("form_flow")
+  @@map("form_views")
+}
+
+model FormAuditLog {
+  id         String      @id @default(uuid())
+  tenantId   String      @map("tenant_id")
+  formId     String?     @map("form_id")
+  actorId    String?     @map("actor_id")
+  action     AuditAction
+  entityType String      @map("entity_type")
+  entityId   String?     @map("entity_id")
+  payload    Json        @default("{}")
+  createdAt  DateTime    @default(now()) @map("created_at")
+
+  tenant TenantProfile @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  form   Form?         @relation(fields: [formId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([formId])
+  @@index([tenantId, createdAt])
+  @@schema("form_flow")
+  @@map("form_audit_logs")
+}
