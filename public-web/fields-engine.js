@@ -22,6 +22,50 @@ function getOptions(config) {
   });
 }
 
+function notifyRatingChange(row) {
+  row.dispatchEvent(new Event('change', { bubbles: true }));
+  row.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+function setToggleGroupValue(row, value, activeClass = 'active') {
+  row.dataset.value = String(value);
+  row.querySelectorAll('button').forEach((btn) => {
+    const selected = btn.dataset.value === String(value);
+    btn.classList.toggle(activeClass, selected);
+    btn.setAttribute('aria-pressed', selected ? 'true' : 'false');
+  });
+  notifyRatingChange(row);
+}
+
+function initStarRow(row, maxStars = 5) {
+  const buttons = row.querySelectorAll('button');
+  const apply = (value) => {
+    row.dataset.value = String(value);
+    buttons.forEach((btn, idx) => {
+      const filled = idx + 1 <= value;
+      btn.classList.toggle('active', filled);
+      btn.setAttribute('aria-pressed', filled ? 'true' : 'false');
+    });
+    notifyRatingChange(row);
+  };
+
+  buttons.forEach((btn, idx) => {
+    btn.classList.add('ff-star-btn');
+    btn.setAttribute('aria-label', `${idx + 1} de ${maxStars} estrelas`);
+    btn.addEventListener('click', () => apply(idx + 1));
+  });
+}
+
+function readRatingRowValue(node) {
+  return (
+    node.querySelector('[data-nps]')?.dataset.value
+    || node.querySelector('[data-stars]')?.dataset.value
+    || node.querySelector('[data-emoji]')?.dataset.value
+    || node.querySelector('[data-scale]')?.dataset.value
+    || ''
+  );
+}
+
 function placeholderFor(field, config) {
   if (config.placeholder) return String(config.placeholder);
   const map = {
@@ -122,9 +166,7 @@ export function fieldInput(field, slug) {
       btn.textContent = String(i);
       btn.dataset.value = String(i);
       btn.addEventListener('click', () => {
-        row.querySelectorAll('.ff-nps-btn').forEach((b) => b.classList.remove('active'));
-        btn.classList.add('active');
-        row.dataset.value = String(i);
+        setToggleGroupValue(row, i, 'active');
       });
       row.appendChild(btn);
     }
@@ -132,19 +174,19 @@ export function fieldInput(field, slug) {
     wrap.appendChild(row);
     input = null;
   } else if (field.type === 'stars') {
+    const maxStars = Math.min(10, Math.max(1, Number(config.max ?? config.maxStars ?? 5) || 5));
     const row = document.createElement('div');
     row.className = 'ff-stars-row';
-    for (let i = 1; i <= 5; i += 1) {
+    row.setAttribute('role', 'radiogroup');
+    for (let i = 1; i <= maxStars; i += 1) {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.textContent = '★';
       btn.dataset.value = String(i);
-      btn.addEventListener('click', () => {
-        row.dataset.value = String(i);
-      });
       row.appendChild(btn);
     }
     row.dataset.stars = '1';
+    initStarRow(row, maxStars);
     wrap.appendChild(row);
     input = null;
   } else if (field.type === 'emoji_rating') {
@@ -158,7 +200,7 @@ export function fieldInput(field, slug) {
       btn.textContent = e;
       btn.dataset.value = String(i);
       btn.addEventListener('click', () => {
-        row.dataset.value = String(i);
+        setToggleGroupValue(row, i, 'active');
       });
       row.appendChild(btn);
     });
@@ -177,7 +219,7 @@ export function fieldInput(field, slug) {
       btn.textContent = String(i);
       btn.dataset.value = String(i);
       btn.addEventListener('click', () => {
-        row.dataset.value = String(i);
+        setToggleGroupValue(row, i, 'active');
       });
       row.appendChild(btn);
     }
@@ -366,7 +408,7 @@ export function refreshFieldVisibility(formEl, fields) {
       try { config = JSON.parse(node.dataset.fieldConfig || '{}'); } catch { /* */ }
       values[id] = readFieldValue(input, node.dataset.fieldType, config);
     } else {
-      values[id] = node.querySelector('[data-nps]')?.dataset.value || node.querySelector('[data-stars]')?.dataset.value || '';
+      values[id] = readRatingRowValue(node);
     }
   }
   const hidden = applyFieldLogic(fields, values);

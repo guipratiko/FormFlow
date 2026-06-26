@@ -175,12 +175,30 @@ button:disabled { opacity: 0.6; cursor: not-allowed; }
 
 input[type="checkbox"] { width: auto; }
 
-.ff-nps-row, .ff-stars-row, .formflow-emoji-row, .ff-scale-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-.ff-nps-btn, .ff-scale-btn { min-width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); cursor: pointer; }
+.ff-nps-row, .ff-stars-row, .formflow-emoji-row, .ff-scale-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; align-items: center; }
+.ff-nps-btn, .ff-star-btn, .ff-stars-row button, .formflow-emoji-btn, .ff-scale-btn {
+  width: auto;
+  margin-top: 0;
+  font-weight: 400;
+}
+.ff-nps-btn, .ff-scale-btn { min-width: 36px; height: 36px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); cursor: pointer; color: var(--text); padding: 0 8px; font-size: 0.875rem; }
 .ff-nps-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 .ff-scale-btn:hover { border-color: var(--secondary); color: var(--secondary); }
+.ff-scale-btn.active { background: color-mix(in srgb, var(--primary) 12%, var(--card)); border-color: var(--primary); color: var(--primary); }
+.ff-stars-row button, .ff-star-btn {
+  background: none;
+  border: none;
+  font-size: 1.75rem;
+  line-height: 1;
+  padding: 2px 4px;
+  color: #d1d5db;
+  cursor: pointer;
+  transition: color 0.15s ease, transform 0.12s ease;
+}
+.ff-stars-row button:hover, .ff-star-btn:hover { transform: scale(1.08); }
+.ff-stars-row button.active, .ff-star-btn.active { color: #fbbf24; }
 .formflow-emoji-btn:hover { border-color: var(--secondary); }
-.ff-stars-row button { background: none; border: none; font-size: 1.5rem; color: #fbbf24; cursor: pointer; }
+.formflow-emoji-btn.active { border-color: var(--primary); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent); }
 .formflow-emoji-btn { font-size: 1.5rem; padding: 6px 10px; border: 2px solid var(--border); border-radius: 10px; background: var(--card); cursor: pointer; }
 .ff-matrix-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
 .ff-matrix-table th, .ff-matrix-table td { border: 1px solid var(--border); padding: 8px; text-align: center; }
