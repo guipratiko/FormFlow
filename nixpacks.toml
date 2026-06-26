@@ -1,7 +1,9 @@
 [phases.setup]
 nixPkgs = ["nodejs_20", "npm-10_x"]
 
+# NODE_ENV=production no Easypanel omite devDependencies; o build precisa do TypeScript.
 [phases.install]
+env = { NPM_CONFIG_PRODUCTION = "false" }
 cmds = ["npm ci"]
 
 [phases.build]
