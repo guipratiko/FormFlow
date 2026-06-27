@@ -1,4 +1,4 @@
-import { fieldInput, readFieldNodeValue, refreshFieldVisibility } from './fields-engine.js';
+import { fieldInput, readFieldNodeValue, refreshFieldVisibility, wireContentBlockButtons } from './fields-engine.js';
 import { resolveFontFamily, resolveGoogleFont, resolveFontWeight } from './fonts-data.js';
 import { initPaginatedForm, validateCurrentPage, isFormPaginated, shouldShowProgressBar, progressBarWidth } from './pagination.js';
 import {
@@ -286,7 +286,7 @@ function applyQuestionNumbers(formEl, fields, settings) {
   if (settings.showQuestionNumbers === false) return;
   let n = 0;
   for (const field of fields) {
-    if (field.type === 'hidden' || field.type === 'utm_capture') continue;
+    if (field.type === 'hidden' || field.type === 'utm_capture' || field.type === 'statement' || field.type === 'content_block') continue;
     n += 1;
     const wrap = formEl.querySelector(`[data-field-id="${field.id}"]`);
     if (!wrap) continue;
@@ -469,6 +469,18 @@ async function main() {
       formEl.appendChild(navWrap);
       syncNav();
     }
+
+    wireContentBlockButtons(
+      formEl,
+      pagination,
+      progressEl,
+      syncNav,
+      () => {
+        const result = validateCurrentPage(formEl, fields);
+        if (!result.valid) showValidationFailure(result);
+        return result;
+      }
+    );
 
     formEl.appendChild(submitBtn);
 

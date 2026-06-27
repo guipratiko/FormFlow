@@ -89,7 +89,7 @@ export function validateFields(formEl, fields, { scope = 'all' } = {}) {
   const activePage = scope === 'activePage' ? formEl.querySelector('.ff-form-page-active') : null;
 
   for (const field of fields) {
-    if (field.type === 'hidden' || field.type === 'utm_capture') continue;
+    if (field.type === 'hidden' || field.type === 'utm_capture' || field.type === 'statement' || field.type === 'content_block') continue;
     if (!field.required) continue;
 
     const node = formEl.querySelector(`[data-field-id="${field.id}"]`);

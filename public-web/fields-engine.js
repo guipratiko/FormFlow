@@ -66,6 +66,20 @@ function readRatingRowValue(node) {
   );
 }
 
+function parseProductOptions(config) {
+  return getOptions(config).map((opt) => {
+    const parts = String(opt.label || opt.value || '')
+      .split('|')
+      .map((s) => s.trim());
+    return {
+      label: parts[0] || opt.label || opt.value,
+      value: opt.value || parts[0],
+      price: parts[1] || '',
+      imageUrl: parts[2] || '',
+    };
+  });
+}
+
 function placeholderFor(field, config) {
   if (config.placeholder) return String(config.placeholder);
   const map = {
@@ -105,18 +119,73 @@ export function fieldInput(field, slug) {
   }
 
   const label = document.createElement('label');
-  label.textContent = field.label;
-  if (field.required) {
-    const req = document.createElement('span');
-    req.className = 'required';
-    req.textContent = '*';
-    label.appendChild(req);
+  if (field.type !== 'statement' && field.type !== 'content_block') {
+    label.textContent = field.label;
+    if (field.required) {
+      const req = document.createElement('span');
+      req.className = 'required';
+      req.textContent = '*';
+      label.appendChild(req);
+    }
+    wrap.appendChild(label);
   }
-  wrap.appendChild(label);
 
   let input;
 
-  if (field.type === 'long_text') {
+  if (field.type === 'statement') {
+    const block = document.createElement('div');
+    block.className = 'ff-statement-block';
+    const title = document.createElement('h3');
+    title.className = 'ff-statement-title';
+    title.textContent = field.label;
+    block.appendChild(title);
+    const bodyText = String(config.body || field.description || '').trim();
+    if (bodyText) {
+      const text = document.createElement('p');
+      text.className = 'ff-statement-text';
+      text.textContent = bodyText;
+      block.appendChild(text);
+    }
+    wrap.appendChild(block);
+    wrap.classList.add('ff-field-statement');
+    input = null;
+  } else if (field.type === 'content_block') {
+    const block = document.createElement('div');
+    block.className = 'ff-content-block';
+    if (field.label) {
+      const title = document.createElement('h3');
+      title.className = 'ff-content-block-title';
+      title.textContent = field.label;
+      block.appendChild(title);
+    }
+    const bodyText = String(config.body || field.description || '').trim();
+    if (bodyText) {
+      const text = document.createElement('p');
+      text.className = 'ff-content-block-text';
+      text.textContent = bodyText;
+      block.appendChild(text);
+    }
+    const btnRow = document.createElement('div');
+    btnRow.className = 'ff-content-block-actions';
+    const buttons = Array.isArray(config.buttons) && config.buttons.length
+      ? config.buttons
+      : [{ label: 'Continuar', action: 'next_page' }];
+    buttons.forEach((btnCfg, idx) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ff-content-block-btn ff-btn-style-solid';
+      btn.textContent = String(btnCfg.label || 'Continuar');
+      btn.dataset.action = String(btnCfg.action || 'next_page');
+      if (btnCfg.url) btn.dataset.url = String(btnCfg.url);
+      btn.dataset.buttonIndex = String(idx);
+      btnRow.appendChild(btn);
+    });
+    block.appendChild(btnRow);
+    wrap.appendChild(block);
+    wrap.dataset.contentBlock = '1';
+    wrap.classList.add('ff-field-content-block');
+    input = null;
+  } else if (field.type === 'long_text') {
     input = document.createElement('textarea');
     input.placeholder = placeholderFor(field, config);
   } else if (field.type === 'address') {
@@ -147,6 +216,50 @@ export function fieldInput(field, slug) {
       row.appendChild(inp);
       row.appendChild(document.createTextNode(` ${opt.label}`));
       group.appendChild(row);
+    }
+    wrap.appendChild(group);
+    input = null;
+  } else if (field.type === 'product') {
+    const group = document.createElement('div');
+    group.className = 'ff-product-grid';
+    group.dataset.product = '1';
+    const options = parseProductOptions(config);
+    if (options.length === 0) {
+      const empty = document.createElement('p');
+      empty.className = 'hint';
+      empty.textContent = 'Nenhum produto configurado.';
+      group.appendChild(empty);
+    }
+    for (const opt of options) {
+      const card = document.createElement('label');
+      card.className = 'ff-product-card';
+      const inp = document.createElement('input');
+      inp.type = 'radio';
+      inp.name = field.id;
+      inp.value = opt.value;
+      if (opt.imageUrl) {
+        const img = document.createElement('img');
+        img.src = opt.imageUrl;
+        img.alt = opt.label;
+        img.className = 'ff-product-image';
+        img.loading = 'lazy';
+        card.appendChild(img);
+      }
+      const meta = document.createElement('div');
+      meta.className = 'ff-product-meta';
+      const name = document.createElement('span');
+      name.className = 'ff-product-name';
+      name.textContent = opt.label;
+      meta.appendChild(name);
+      if (opt.price) {
+        const price = document.createElement('span');
+        price.className = 'ff-product-price';
+        price.textContent = opt.price;
+        meta.appendChild(price);
+      }
+      card.appendChild(inp);
+      card.appendChild(meta);
+      group.appendChild(card);
     }
     wrap.appendChild(group);
     input = null;
@@ -366,6 +479,15 @@ export function readFieldNodeValue(node, slug, uploadFn) {
   const addressGrid = node.querySelector('[data-address]');
   if (addressGrid) return { fieldId, value: readAddressValue(node) };
 
+  if (type === 'statement' || type === 'content_block') {
+    return { fieldId, value: '' };
+  }
+
+  if (type === 'product' || node.querySelector('[data-product]') || type === 'radio') {
+    const checked = node.querySelector('input[type="radio"]:checked');
+    return { fieldId, value: checked ? checked.value : '' };
+  }
+
   const input = node.querySelector('input, textarea, select');
   if (!input) return { fieldId, value: '' };
 
@@ -379,11 +501,6 @@ export function readFieldNodeValue(node, slug, uploadFn) {
   if (type === 'multi_select') {
     const checked = node.querySelectorAll('input[type="checkbox"]:checked');
     return { fieldId, value: Array.from(checked).map((c) => c.value).join(', ') };
-  }
-
-  if (type === 'radio') {
-    const checked = node.querySelector('input[type="radio"]:checked');
-    return { fieldId, value: checked ? checked.value : '' };
   }
 
   if (type === 'checkbox' || type === 'terms_acceptance') {
@@ -400,6 +517,11 @@ export function refreshFieldVisibility(formEl, fields) {
     const id = node.dataset.fieldId;
     if (node.dataset.fieldType === 'address') {
       values[id] = addressValueForLogic(node);
+      continue;
+    }
+    if (node.dataset.fieldType === 'product' || node.querySelector('[data-product]')) {
+      const checked = node.querySelector('input[type="radio"]:checked');
+      values[id] = checked ? checked.value : '';
       continue;
     }
     const input = node.querySelector('input, textarea, select');
@@ -440,4 +562,31 @@ export function applyFieldLogic(fields, values) {
     }
   }
   return hidden;
+}
+
+/** Liga botões do tipo content_block (próxima página / abrir URL). */
+export function wireContentBlockButtons(formEl, pagination, progressEl, syncNav, validatePageFn) {
+  formEl.querySelectorAll('[data-content-block="1"]').forEach((wrap) => {
+    wrap.querySelectorAll('.ff-content-block-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.action || 'next_page';
+        if (action === 'open_url') {
+          const url = (btn.dataset.url || '').trim();
+          if (url) window.open(url, '_blank', 'noopener,noreferrer');
+          return;
+        }
+        if (action === 'next_page') {
+          if (!pagination?.paginated) {
+            formEl.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            return;
+          }
+          const result = validatePageFn?.();
+          if (result && !result.valid) return;
+          if (pagination.isLastPage()) return;
+          pagination.goToPage(pagination.getCurrentPage() + 1, progressEl);
+          syncNav?.();
+        }
+      });
+    });
+  });
 }

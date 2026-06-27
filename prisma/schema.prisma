@@ -88,6 +88,8 @@ enum FormFieldType {
   api_token
   seller_id
   lead_source
+  statement
+  content_block
 
   @@schema("form_flow")
 }
