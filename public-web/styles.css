@@ -266,8 +266,8 @@ input[type="checkbox"] { width: auto; }
   border-radius: 10px;
   font-weight: 600;
   font-size: 0.9375rem;
-  color: #fff;
-  background: var(--primary);
+  color: var(--btn-text-color, #fff);
+  background: var(--btn-color, var(--primary));
   border: none;
   cursor: pointer;
 }
@@ -452,11 +452,11 @@ input[type="checkbox"] { width: auto; }
 .form-submit-btn, .ff-nav-btn {
   transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, border-color 0.18s ease;
 }
-.ff-btn-style-solid.form-submit-btn { background: var(--btn-color); color: #fff; border: none; }
-.ff-btn-style-outline.form-submit-btn { background: transparent; color: var(--btn-color); border: 2px solid var(--btn-color); }
-.ff-btn-style-ghost.form-submit-btn { background: color-mix(in srgb, var(--btn-color) 12%, transparent); color: var(--btn-color); border: none; }
-.ff-btn-style-soft.form-submit-btn { background: color-mix(in srgb, var(--btn-color) 18%, #fff); color: var(--btn-color); border: none; }
-.ff-btn-style-gradient.form-submit-btn { background: linear-gradient(135deg, var(--btn-color), var(--btn-color-end)); color: #fff; border: none; }
+.ff-btn-style-solid.form-submit-btn { background: var(--btn-color); color: var(--btn-text-color, #fff); border: none; }
+.ff-btn-style-outline.form-submit-btn { background: transparent; color: var(--btn-text-color, var(--btn-color)); border: 2px solid var(--btn-color); }
+.ff-btn-style-ghost.form-submit-btn { background: color-mix(in srgb, var(--btn-color) 12%, transparent); color: var(--btn-text-color, var(--btn-color)); border: none; }
+.ff-btn-style-soft.form-submit-btn { background: color-mix(in srgb, var(--btn-color) 18%, #fff); color: var(--btn-text-color, var(--btn-color)); border: none; }
+.ff-btn-style-gradient.form-submit-btn { background: linear-gradient(135deg, var(--btn-color), var(--btn-color-end)); color: var(--btn-text-color, #fff); border: none; }
 .ff-btn-effect-lift.form-submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 24px color-mix(in srgb, var(--btn-color) 35%, transparent); }
 .ff-btn-effect-glow.form-submit-btn:hover:not(:disabled) { box-shadow: 0 0 0 4px color-mix(in srgb, var(--btn-color) 25%, transparent); }
 .ff-btn-effect-pulse.form-submit-btn { animation: ff-btn-pulse 2s ease-in-out infinite; }

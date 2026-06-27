@@ -93,6 +93,11 @@ function applyTheme(theme, layout) {
   }
   root.style.setProperty('--btn-color', ls.buttonColor || theme?.primaryColor || '#2563eb');
   root.style.setProperty('--btn-color-end', ls.buttonColorEnd || theme?.secondaryColor || '#64748b');
+  if (ls.buttonTextColor) {
+    root.style.setProperty('--btn-text-color', ls.buttonTextColor);
+  } else {
+    root.style.removeProperty('--btn-text-color');
+  }
 
   if (theme?.backgroundColor) root.style.setProperty('--bg', theme.backgroundColor);
   if (ls.cardMaxWidth) root.style.setProperty('--card-max', `${ls.cardMaxWidth}px`);
