@@ -1,0 +1,345 @@
+/* FormFlow — efeitos visuais por modo de exibição */
+
+@media (prefers-reduced-motion: reduce) {
+  .form-body .field,
+  .ff-form-page,
+  .formflow-progress-bar,
+  .form-submit-btn,
+  .ff-nav-btn {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* —— Transições de página (mais fluidas) —— */
+.ff-form-page {
+  will-change: opacity, transform;
+}
+
+.ff-form-page-fade.ff-form-page-enter {
+  animation: ff-page-fade-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ff-form-page-slide.ff-form-page-enter {
+  animation: ff-page-slide-in 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ff-form-page-scale.ff-form-page-enter {
+  animation: ff-page-scale-in 0.44s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.ff-form-page-exit {
+  animation: ff-page-fade-out 0.22s ease both;
+}
+
+@keyframes ff-page-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ff-page-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes ff-page-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+    filter: blur(0);
+  }
+}
+
+@keyframes ff-page-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes ff-field-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes ff-field-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes ff-field-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ff-mode-title-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.field.ff-field-animate {
+  animation: ff-field-rise 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--ff-field-i, 0) * 70ms);
+}
+
+/* Barra de progresso fluida */
+.formflow-progress {
+  position: relative;
+  overflow: hidden;
+}
+
+.formflow-progress-bar {
+  transition: width 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  background: linear-gradient(
+    90deg,
+    var(--primary, var(--ff-primary, #2563eb)),
+    color-mix(in srgb, var(--primary, var(--ff-primary, #2563eb)) 70%, #fff)
+  );
+}
+
+.formflow-progress::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: translateX(-100%);
+  animation: ff-progress-shimmer 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes ff-progress-shimmer {
+  0% { transform: translateX(-100%); }
+  60%, 100% { transform: translateX(100%); }
+}
+
+/* —— Typeform / Quiz —— */
+.form-body.ff-form-mode-typeform,
+.form-body.ff-form-mode-quiz {
+  text-align: center;
+}
+
+.form-body.ff-form-mode-typeform > h1,
+.form-body.ff-form-mode-quiz > h1 {
+  animation: ff-mode-title-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  font-size: clamp(1.5rem, 4vw, 1.85rem);
+  letter-spacing: -0.03em;
+}
+
+.form-body.ff-form-mode-typeform > .desc,
+.form-body.ff-form-mode-quiz > .desc {
+  animation: ff-mode-title-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.08s both;
+  max-width: 36rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.form-body.ff-form-mode-typeform .ff-form-page-active .field,
+.form-body.ff-form-mode-quiz .ff-form-page-active .field {
+  min-height: 12rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 0 16px;
+  animation: ff-field-rise 0.52s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.form-body.ff-form-mode-typeform .ff-field-align-left .field label,
+.form-body.ff-form-mode-quiz .ff-field-align-left .field label {
+  text-align: left;
+}
+
+.form-body.ff-form-mode-typeform .field label,
+.form-body.ff-form-mode-quiz .field label {
+  font-size: clamp(1.125rem, 2.5vw, 1.35rem);
+  font-weight: var(--ff-label-weight, var(--ff-body-weight, inherit));
+  line-height: 1.35;
+  margin-bottom: 14px;
+}
+
+.form-body.ff-form-mode-typeform .field input,
+.form-body.ff-form-mode-typeform .field textarea,
+.form-body.ff-form-mode-typeform .field select,
+.form-body.ff-form-mode-quiz .field input,
+.form-body.ff-form-mode-quiz .field textarea,
+.form-body.ff-form-mode-quiz .field select {
+  font-size: 1.0625rem;
+  padding: 14px 16px;
+  border-radius: 14px;
+  transition:
+    border-color 0.22s ease,
+    box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.22s ease;
+}
+
+.form-body.ff-form-mode-typeform .field input:focus,
+.form-body.ff-form-mode-typeform .field textarea:focus,
+.form-body.ff-form-mode-typeform .field select:focus,
+.form-body.ff-form-mode-quiz .field input:focus,
+.form-body.ff-form-mode-quiz .field textarea:focus,
+.form-body.ff-form-mode-quiz .field select:focus {
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--primary, #2563eb) 16%, transparent),
+    0 12px 28px color-mix(in srgb, var(--primary, #2563eb) 12%, transparent);
+}
+
+.form-body.ff-form-mode-typeform .ff-nav-btn,
+.form-body.ff-form-mode-quiz .ff-nav-btn,
+.form-body.ff-form-mode-typeform .form-submit-btn,
+.form-body.ff-form-mode-quiz .form-submit-btn {
+  border-radius: 999px;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* —— Pesquisa —— */
+.form-body.ff-form-mode-survey > h1 {
+  animation: ff-mode-title-in 0.5s ease both;
+}
+
+.form-body.ff-form-mode-survey .field {
+  animation: ff-field-rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--ff-field-i, 0) * 45ms);
+}
+
+.form-body.ff-form-mode-survey .field:nth-child(n) {
+  --ff-field-i: 0;
+}
+
+.form-body.ff-form-mode-survey .form-body > .field:nth-of-type(1),
+.form-body.ff-form-mode-survey .ff-form-page .field:nth-child(1) { --ff-field-i: 0; }
+.form-body.ff-form-mode-survey .ff-form-page .field:nth-child(2) { --ff-field-i: 1; }
+.form-body.ff-form-mode-survey .ff-form-page .field:nth-child(3) { --ff-field-i: 2; }
+.form-body.ff-form-mode-survey .ff-form-page .field:nth-child(4) { --ff-field-i: 3; }
+.form-body.ff-form-mode-survey .ff-form-page .field:nth-child(5) { --ff-field-i: 4; }
+.form-body.ff-form-mode-survey .ff-form-page .field:nth-child(n + 6) { --ff-field-i: 5; }
+
+.form-body.ff-form-mode-survey .field label {
+  font-weight: var(--ff-label-weight, var(--ff-body-weight, inherit));
+  color: color-mix(in srgb, var(--text, #0f172a) 88%, var(--secondary, #64748b));
+}
+
+.form-body.ff-form-mode-survey .field input:focus,
+.form-body.ff-form-mode-survey .field textarea:focus,
+.form-body.ff-form-mode-survey .field select:focus {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary, #2563eb) 12%, transparent);
+}
+
+/* —— Cadastro —— */
+.form-body.ff-form-mode-registration .field {
+  animation: ff-field-slide-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--ff-field-i, 0) * 55ms);
+}
+
+.form-body.ff-form-mode-registration .field input,
+.form-body.ff-form-mode-registration .field textarea,
+.form-body.ff-form-mode-registration .field select {
+  max-width: 480px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--card, #fff) 92%, var(--primary, #2563eb) 8%);
+}
+
+.form-body.ff-form-mode-registration .field label {
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: var(--ff-label-weight, var(--ff-body-weight, inherit));
+  color: var(--muted, #64748b);
+}
+
+/* —— Checkout —— */
+.form-body.ff-form-mode-checkout .field[data-field-type='payment'],
+.form-body.ff-form-mode-checkout .field[data-field-type='product'],
+.form-body.ff-form-mode-checkout .field[data-field-type='coupon'] {
+  animation: ff-field-pop 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--primary, #2563eb) 25%, var(--border, #e2e8f0));
+  border-radius: 14px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--card, #fff) 96%, var(--primary, #2563eb) 4%),
+    color-mix(in srgb, var(--secondary, #64748b) 6%, var(--card, #fff))
+  );
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--primary, #2563eb) 8%, transparent);
+}
+
+.form-body.ff-form-mode-checkout .form-submit-btn {
+  width: 100%;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+
+.form-body.ff-form-mode-checkout .form-submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--primary, #2563eb) 28%, transparent);
+}
+
+/* —— Tradicional —— */
+.form-body.ff-form-mode-traditional .field {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.form-body.ff-form-mode-traditional .field:hover {
+  transform: translateX(2px);
+}
+
+.form-body.ff-form-mode-traditional .field input:focus,
+.form-body.ff-form-mode-traditional .field textarea:focus,
+.form-body.ff-form-mode-traditional .field select:focus {
+  transition: box-shadow 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.2s ease;
+}
+
+/* Navegação */
+.ff-form-nav {
+  animation: ff-mode-title-in 0.4s ease 0.12s both;
+}
+
+.ff-nav-btn {
+  transition:
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.22s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.ff-nav-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+}
+
+.ff-step-title {
+  animation: ff-mode-title-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}

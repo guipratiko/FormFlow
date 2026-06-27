@@ -6,6 +6,45 @@ export function getVisibleFields(fields) {
   return (fields || []).filter((f) => !SKIP_TYPES.has(f.type));
 }
 
+function buildWizardStepPages(visible, steps) {
+  if (!steps.length || !visible.length) return [];
+
+  const sortedSteps = [...steps].sort((a, b) => a.orderIndex - b.orderIndex);
+  const buckets = sortedSteps.map(() => []);
+  const assigned = new Set();
+
+  for (const field of visible) {
+    if (!field.stepId) continue;
+    const stepIndex = sortedSteps.findIndex((s) => s.id === field.stepId);
+    if (stepIndex >= 0) {
+      buckets[stepIndex].push(field);
+      assigned.add(field.id);
+    }
+  }
+
+  const unassigned = visible.filter((f) => !assigned.has(f.id));
+  if (unassigned.length > 0) {
+    const stepCount = sortedSteps.length;
+    const perStep = Math.max(1, Math.ceil(unassigned.length / stepCount));
+    for (let i = 0; i < unassigned.length; i++) {
+      const stepIndex = Math.min(Math.floor(i / perStep), stepCount - 1);
+      buckets[stepIndex].push(unassigned[i]);
+    }
+  }
+
+  const pages = [];
+  sortedSteps.forEach((step, index) => {
+    if (buckets[index].length === 0) return;
+    pages.push({
+      fields: buckets[index],
+      stepId: step.id,
+      stepTitle: (step.title || '').trim() || `Passo ${index + 1}`,
+    });
+  });
+
+  return pages;
+}
+
 export function buildFieldPages(fields, settings = {}, formLayout = 'single_page', steps = []) {
   const visible = getVisibleFields(fields);
   if (visible.length === 0) return [[]];
@@ -24,19 +63,10 @@ export function buildFieldPages(fields, settings = {}, formLayout = 'single_page
 
   if (formLayout === 'wizard') {
     if (steps.length > 0) {
-      const sortedSteps = [...steps].sort((a, b) => a.orderIndex - b.orderIndex);
-      const pages = [];
-      const assigned = new Set();
-
-      for (const step of sortedSteps) {
-        const pageFields = visible.filter((f) => f.stepId === step.id);
-        pageFields.forEach((f) => assigned.add(f.id));
-        if (pageFields.length) pages.push(pageFields);
+      const wizardPages = buildWizardStepPages(visible, steps);
+      if (wizardPages.length > 0) {
+        return wizardPages.map((p) => p.fields);
       }
-
-      const unassigned = visible.filter((f) => !assigned.has(f.id));
-      if (unassigned.length) pages.push(unassigned);
-      if (pages.length) return pages;
     }
 
     const perPage = Math.max(1, Number(settings.fieldsPerPage) || 5);
@@ -64,11 +94,22 @@ export function buildFieldPages(fields, settings = {}, formLayout = 'single_page
   return pages.length ? pages : [visible];
 }
 
-export function getPageStepTitle(pageFields, steps, pageIndex, formLayout) {
+export function getPageStepTitle(pageFields, steps, pageIndex, formLayout, allFields) {
   if (formLayout !== 'wizard' || !steps.length) return null;
+
+  if (allFields) {
+    const wizardPages = buildWizardStepPages(getVisibleFields(allFields), steps);
+    if (wizardPages[pageIndex]?.stepTitle) return wizardPages[pageIndex].stepTitle;
+  }
+
   const stepId = pageFields.find((f) => f.stepId)?.stepId;
-  if (!stepId) return null;
-  const step = steps.find((s) => s.id === stepId);
+  if (stepId) {
+    const step = steps.find((s) => s.id === stepId);
+    if (step?.title?.trim()) return step.title.trim();
+  }
+
+  const sortedSteps = [...steps].sort((a, b) => a.orderIndex - b.orderIndex);
+  const step = sortedSteps[pageIndex];
   return (step?.title || '').trim() || `Passo ${pageIndex + 1}`;
 }
 
@@ -76,11 +117,12 @@ export function isFormPaginated(fields, settings, formLayout, steps) {
   return buildFieldPages(fields, settings, formLayout, steps || []).length > 1;
 }
 
-export function shouldShowProgressBar(progressBar, paginated) {
-  return Boolean(progressBar || paginated);
+export function shouldShowProgressBar(progressBar) {
+  return Boolean(progressBar);
 }
 
 export function progressBarWidth(progressBar, paginated, pageIndex, pageCount) {
+  if (!progressBar) return 0;
   if (paginated && pageCount > 0) {
     return Math.round(((pageIndex + 1) / pageCount) * 100);
   }
@@ -91,6 +133,16 @@ export function progressBarWidth(progressBar, paginated, pageIndex, pageCount) {
 /**
  * Monta formulário paginado: campos ficam no DOM (para validação), páginas alternam visibilidade.
  */
+function animatePageFields(pageEl) {
+  if (!pageEl) return;
+  pageEl.querySelectorAll('.field').forEach((field, i) => {
+    field.style.setProperty('--ff-field-i', String(i));
+    field.classList.remove('ff-field-animate');
+    void field.offsetHeight;
+    field.classList.add('ff-field-animate');
+  });
+}
+
 export function initPaginatedForm({
   formEl,
   fields,
@@ -137,7 +189,7 @@ export function initPaginatedForm({
 
   function updateStepTitle() {
     if (!stepTitleEl) return;
-    const title = getPageStepTitle(pages[currentPage], steps || [], currentPage, formLayout);
+    const title = getPageStepTitle(pages[currentPage], steps || [], currentPage, formLayout, fields);
     if (title) {
       stepTitleEl.textContent = title;
       stepTitleEl.hidden = false;
@@ -178,10 +230,12 @@ export function initPaginatedForm({
     currentPage = index;
     updateProgress(progressBarEl);
     updateStepTitle();
+    animatePageFields(next);
     if (onPageChange) onPageChange(currentPage, pages.length);
   }
 
   updateStepTitle();
+  animatePageFields(pageNodes[0]);
 
   return {
     paginated: true,

@@ -1,5 +1,5 @@
 import { fieldInput, readFieldNodeValue, refreshFieldVisibility } from './fields-engine.js';
-import { resolveFontFamily, resolveGoogleFont } from './fonts-data.js';
+import { resolveFontFamily, resolveGoogleFont, resolveFontWeight } from './fonts-data.js';
 import { initPaginatedForm, validateCurrentPage, isFormPaginated, shouldShowProgressBar, progressBarWidth } from './pagination.js';
 import {
   clearFormErrors,
@@ -65,6 +65,22 @@ function formBodyClassNames(ls = {}, mode) {
   return parts.join(' ');
 }
 
+function applyTypographyVars(root, prefix, typo) {
+  if (!typo) return;
+  if (typo.bold != null) {
+    if (typo.bold) root.style.setProperty(`--ff-${prefix}-weight`, '700');
+    else root.style.removeProperty(`--ff-${prefix}-weight`);
+  }
+  if (typo.italic != null) root.style.setProperty(`--ff-${prefix}-style`, typo.italic ? 'italic' : 'normal');
+  if (typo.color) root.style.setProperty(`--ff-${prefix}-color`, typo.color);
+  const bg = typo.backgroundColor;
+  if (bg && bg !== 'transparent') {
+    root.style.setProperty(`--ff-${prefix}-bg`, bg);
+  } else {
+    root.style.removeProperty(`--ff-${prefix}-bg`);
+  }
+}
+
 function applyTheme(theme, layout) {
   const root = document.documentElement;
   const ls = layout || theme?.layoutSettings || {};
@@ -94,8 +110,15 @@ function applyTheme(theme, layout) {
   }
 
   const fontKey = theme?.fontFamily || 'Inter';
-  loadGoogleFont(resolveGoogleFont(fontKey));
-  document.body.style.fontFamily = resolveFontFamily(fontKey);
+  const fontGoogle = ls.fontGoogle ?? resolveGoogleFont(fontKey);
+  const fontStack = ls.fontStack || resolveFontFamily(fontKey);
+  const fontWeight = ls.fontWeight ?? resolveFontWeight(fontKey);
+  loadGoogleFont(fontGoogle);
+  document.body.style.fontFamily = fontStack;
+  document.body.style.fontWeight = String(fontWeight);
+  document.body.style.fontSynthesis = 'none';
+  root.style.setProperty('--ff-body-weight', String(fontWeight));
+  root.style.setProperty('font-family', fontStack);
 
   document.body.classList.toggle('dark', isDark);
   document.body.classList.remove('formflow-bg-image');
@@ -127,6 +150,10 @@ function applyTheme(theme, layout) {
   } else {
     document.getElementById('formflow-custom-css')?.remove();
   }
+
+  applyTypographyVars(root, 'title', ls.titleTypography);
+  applyTypographyVars(root, 'desc', ls.descTypography);
+  applyTypographyVars(root, 'label', ls.labelTypography);
 }
 
 function extractYoutubeVideoId(url) {
@@ -331,7 +358,7 @@ async function main() {
 
     let progressEl = null;
     const paginatedPreview = isFormPaginated(fields, settings, form.layout, form.steps);
-    const showProgress = shouldShowProgressBar(settings.progressBar, paginatedPreview);
+    const showProgress = shouldShowProgressBar(settings.progressBar);
     if (showProgress) {
       progressEl = document.createElement('div');
       progressEl.className = 'formflow-progress';
@@ -365,9 +392,14 @@ async function main() {
 
     if (pagination.paginated) {
       pagination.updateProgress(progressEl);
-    } else if (progressEl) {
-      const bar = progressEl.querySelector('.formflow-progress-bar');
-      if (bar) bar.style.width = '100%';
+    } else {
+      formEl.querySelectorAll('.field').forEach((el, i) => {
+        el.style.setProperty('--ff-field-i', String(i));
+      });
+      if (progressEl) {
+        const bar = progressEl.querySelector('.formflow-progress-bar');
+        if (bar) bar.style.width = '100%';
+      }
     }
 
     const submitLabel = layoutSettings.submitLabel?.trim() || 'Enviar resposta';

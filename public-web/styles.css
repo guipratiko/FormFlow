@@ -21,6 +21,8 @@
 body {
   margin: 0;
   font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+  font-weight: var(--ff-body-weight, 400);
+  font-synthesis: none;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -111,10 +113,23 @@ h1 {
   margin: 0 0 8px;
   font-size: 1.75rem;
   letter-spacing: -0.02em;
+  font-weight: var(--ff-title-weight, var(--ff-body-weight, inherit));
+  font-style: var(--ff-title-style, normal);
+  color: var(--ff-title-color, inherit);
+  background-color: var(--ff-title-bg, transparent);
+  border-radius: 6px;
+  padding: 2px 6px;
+  display: inline-block;
+  max-width: 100%;
 }
 
 .desc, .hint {
-  color: var(--secondary);
+  color: var(--ff-desc-color, var(--secondary));
+  font-weight: var(--ff-desc-weight, inherit);
+  font-style: var(--ff-desc-style, normal);
+  background-color: var(--ff-desc-bg, transparent);
+  border-radius: 6px;
+  padding: 2px 6px;
   margin: 0 0 12px;
   line-height: 1.5;
   font-size: 0.9rem;
@@ -124,7 +139,12 @@ h1 {
 
 label {
   display: block;
-  font-weight: 600;
+  font-weight: var(--ff-label-weight, var(--ff-body-weight, inherit));
+  font-style: var(--ff-label-style, normal);
+  color: var(--ff-label-color, inherit);
+  background-color: var(--ff-label-bg, transparent);
+  border-radius: 4px;
+  padding: 1px 4px;
   margin-bottom: 6px;
 }
 
@@ -203,7 +223,13 @@ input[type="checkbox"] { width: auto; }
 .ff-matrix-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
 .ff-matrix-table th, .ff-matrix-table td { border: 1px solid var(--border); padding: 8px; text-align: center; }
 .ff-radio-group, .ff-checkbox-group { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
-.ff-radio-option, .ff-checkbox-option { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.ff-radio-option, .ff-checkbox-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: inherit;
+}
 .field label.ff-terms-row,
 .ff-terms-row {
   display: flex !important;
@@ -400,50 +426,20 @@ input[type="checkbox"] { width: auto; }
   background: var(--card);
   border: 1px solid var(--border);
   color: var(--text);
+  font-weight: var(--ff-body-weight, inherit);
 }
 .ff-form-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
 .ff-page-indicator { font-size: 0.8125rem; color: var(--muted); }
 
-.ff-form-page-fade.ff-form-page-enter { animation: ff-page-fade-in 0.28s ease; }
-.ff-form-page-slide.ff-form-page-enter { animation: ff-page-slide-in 0.32s ease; }
-.ff-form-page-scale.ff-form-page-enter { animation: ff-page-scale-in 0.28s ease; }
-@keyframes ff-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
-@keyframes ff-page-slide-in { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: translateX(0); } }
-@keyframes ff-page-scale-in { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+.ff-form-page-fade.ff-form-page-enter { animation: ff-page-fade-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.ff-form-page-slide.ff-form-page-enter { animation: ff-page-slide-in 0.48s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.ff-form-page-scale.ff-form-page-enter { animation: ff-page-scale-in 0.44s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 .ff-step-title {
   margin: 0 0 12px;
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: var(--ff-label-weight, var(--ff-body-weight, inherit));
   color: var(--text);
-}
-
-.ff-form-mode-typeform .field label,
-.ff-form-mode-quiz .field label {
-  font-size: 1.125rem;
-}
-.ff-form-mode-typeform .form-body,
-.ff-form-mode-quiz .form-body {
-  text-align: center;
-}
-.ff-form-mode-typeform .ff-field-align-left .field label,
-.ff-form-mode-quiz .ff-field-align-left .field label { text-align: left; }
-
-.ff-form-mode-survey .field { margin-bottom: 14px; }
-.ff-form-mode-survey .form-body h1 { font-size: 1.35rem; }
-
-.ff-form-mode-registration .field input,
-.ff-form-mode-registration .field textarea,
-.ff-form-mode-registration .field select {
-  max-width: 480px;
-}
-
-.ff-form-mode-checkout .field[data-field-type='payment'],
-.ff-form-mode-checkout .field[data-field-type='product'] {
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--secondary) 6%, var(--card));
 }
 
 .ff-form-error {
