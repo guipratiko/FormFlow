@@ -154,6 +154,13 @@ function applyTheme(theme, layout) {
   applyTypographyVars(root, 'title', ls.titleTypography);
   applyTypographyVars(root, 'desc', ls.descTypography);
   applyTypographyVars(root, 'label', ls.labelTypography);
+
+  const logoMaxHeight = ls.logoMaxHeight ?? 64;
+  const bannerMaxHeight = ls.bannerMaxHeight ?? 280;
+  const headerVideoMaxHeight = ls.headerVideoMaxHeight ?? bannerMaxHeight;
+  root.style.setProperty('--ff-logo-max-height', `${logoMaxHeight}px`);
+  root.style.setProperty('--ff-banner-max-height', `${bannerMaxHeight}px`);
+  root.style.setProperty('--ff-header-video-max-height', `${headerVideoMaxHeight}px`);
 }
 
 function extractYoutubeVideoId(url) {
@@ -438,7 +445,7 @@ async function main() {
       navWrap.appendChild(prevBtn);
       navWrap.appendChild(pageIndicator);
       navWrap.appendChild(nextBtn);
-
+      navWrap.appendChild(submitBtn);
       submitBtn.style.display = 'none';
 
       syncNav = () => {
@@ -482,7 +489,9 @@ async function main() {
       }
     );
 
-    formEl.appendChild(submitBtn);
+    if (!pagination.paginated) {
+      formEl.appendChild(submitBtn);
+    }
 
     formEl.addEventListener('input', () => clearFormErrors(formEl));
     formEl.addEventListener('change', () => clearFormErrors(formEl));

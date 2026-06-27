@@ -83,16 +83,25 @@ body.formflow-bg-image {
 
 .form-logo {
   display: block;
-  max-height: 64px;
+  max-height: var(--ff-logo-max-height, 64px);
   margin: 16px auto 16px;
   border-radius: 8px;
 }
 
-.form-banner, .form-video {
+.form-banner {
   width: 100%;
   border-radius: 0;
   margin-bottom: 0;
-  max-height: 280px;
+  max-height: var(--ff-banner-max-height, 280px);
+  object-fit: cover;
+  display: block;
+}
+
+.form-video {
+  width: 100%;
+  border-radius: 0;
+  margin-bottom: 0;
+  max-height: var(--ff-header-video-max-height, var(--ff-banner-max-height, 280px));
   object-fit: cover;
   display: block;
 }
@@ -107,7 +116,7 @@ body.formflow-bg-image {
   width: 100%;
 }
 
-.form-video { min-height: 200px; border: 0; }
+.form-video { min-height: min(200px, var(--ff-header-video-max-height, var(--ff-banner-max-height, 280px))); border: 0; }
 
 h1 {
   margin: 0 0 8px;
@@ -471,8 +480,50 @@ input[type="checkbox"] { width: auto; }
   color: var(--text);
   font-weight: var(--ff-body-weight, inherit);
 }
-.ff-form-nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
-.ff-page-indicator { font-size: 0.8125rem; color: var(--muted); }
+
+.ff-form-nav {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 16px;
+}
+
+.ff-form-nav .ff-nav-prev {
+  grid-column: 1;
+  justify-self: start;
+  margin-top: 0;
+}
+
+.ff-page-indicator {
+  grid-column: 2;
+  justify-self: center;
+  font-size: 0.8125rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.ff-form-nav .ff-nav-next,
+.ff-form-nav > .form-submit-btn {
+  grid-column: 3;
+  justify-self: end;
+  width: auto;
+  max-width: 100%;
+  margin-top: 0;
+  white-space: normal;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.ff-form-nav .ff-btn-align-stretch.form-submit-btn,
+.ff-form-nav .ff-btn-align-left.form-submit-btn,
+.ff-form-nav .ff-btn-align-center.form-submit-btn,
+.ff-form-nav .ff-btn-align-right.form-submit-btn {
+  width: auto;
+  display: inline-block;
+  margin-left: 0;
+  margin-right: 0;
+}
 
 .ff-form-page-fade.ff-form-page-enter { animation: ff-page-fade-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both; }
 .ff-form-page-slide.ff-form-page-enter { animation: ff-page-slide-in 0.48s cubic-bezier(0.22, 1, 0.36, 1) both; }
