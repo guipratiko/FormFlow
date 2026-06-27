@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { AuditAction } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 const responseInclude = {
@@ -56,5 +57,35 @@ export class ResponsesService {
       take: 200,
       include: responseInclude,
     });
+  }
+
+  async clearAllByForm(tenantId: string, formId: string, actorId: string) {
+    const form = await this.prisma.form.findFirst({
+      where: { id: formId, tenantId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!form) throw new NotFoundException('Formulário não encontrado');
+
+    const now = new Date();
+    const result = await this.prisma.formResponse.updateMany({
+      where: { formId, deletedAt: null },
+      data: { deletedAt: now },
+    });
+
+    if (result.count > 0) {
+      await this.prisma.formAuditLog.create({
+        data: {
+          tenantId,
+          formId,
+          actorId,
+          action: AuditAction.update,
+          entityType: 'form_responses',
+          entityId: formId,
+          payload: { clearedCount: result.count },
+        },
+      });
+    }
+
+    return { deletedCount: result.count };
   }
 }

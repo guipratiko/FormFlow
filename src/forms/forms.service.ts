@@ -69,7 +69,7 @@ export class FormsService {
         publishedAt: true,
         createdAt: true,
         updatedAt: true,
-        _count: { select: { responses: true, views: true } },
+        _count: { select: { responses: { where: { deletedAt: null } }, views: true } },
       },
     });
     return forms.map((f) => ({
@@ -108,7 +108,7 @@ export class FormsService {
         theme: true,
         steps: { orderBy: { orderIndex: 'asc' } },
         fields: { orderBy: { orderIndex: 'asc' } },
-        _count: { select: { responses: true, views: true } },
+        _count: { select: { responses: { where: { deletedAt: null } }, views: true } },
       },
     });
     if (!form) throw new NotFoundException('Formulário não encontrado');
